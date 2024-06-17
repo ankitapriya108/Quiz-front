@@ -1,0 +1,90 @@
+
+
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Application</title>
+  <style>
+    .question-container {
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <label for="level-select">Select Level:</label>
+    <select id="level-select">
+      <option value="">--Select Level--</option>
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+  </div>
+  
+  <div id="questions-container"></div>
+
+ 
+</body>
+</html> -->
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Questions by Level</title>
+</head>
+<body>
+  <select id="levelSelect">
+    <option value="">Select Level</option>
+    <option value="easy">Easy</option>
+    <option value="medium">Medium</option>
+    <option value="hard">Hard</option>
+  </select>
+  <div id="questionsContainer"></div>
+
+  <script>
+   document.getElementById('levelSelect').addEventListener('change', async function() {
+  const level = this.value;
+  if (level) {
+    try {
+      const response = await fetch(`http://localhost:4000/questions/${level}`);
+      const questions = await response.json();
+      console.log('Fetched questions:', questions);  // Log fetched questions
+      displayQuestions(questions);
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+    }
+  } else {
+    document.getElementById('questionsContainer').innerHTML = '';
+  }
+});
+
+    function displayQuestions(questions) {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+      questions.forEach(question => {
+        const questionDiv = document.createElement('div');
+        question.questionArray.forEach(q => {
+          questionDiv.innerHTML += `<p>${q.text}</p>`;
+          const options = q.options.map(option => 
+            `<label><input type="checkbox" name="option">${option}</label>`
+          ).join('<br>');
+          questionDiv.innerHTML += options;
+        });
+        container.appendChild(questionDiv);
+      });
+    }
+  </script>
+</body>
+</html>
+
