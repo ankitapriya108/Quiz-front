@@ -1,90 +1,129 @@
-
-
-<!-- 
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz Application</title>
-  <style>
-    .question-container {
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      padding: 10px;
-      border-radius: 5px;
-    }
-  </style>
-</head>
-<body>
-  <div>
-    <label for="level-select">Select Level:</label>
-    <select id="level-select">
-      <option value="">--Select Level--</option>
-      <option value="easy">Easy</option>
-      <option value="medium">Medium</option>
-      <option value="hard">Hard</option>
-    </select>
-  </div>
-  
-  <div id="questions-container"></div>
-
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Question Fetch</title>
+     <link rel="stylesheet" href="output.css">
+ </head>
+ <body>
+     <div class="max-w-md">
+         <div class="mb-4">
+             <label for="category" class="block text-gray-700 text-sm font-bold mb-2">Select Category</label>
+             <select id="category" class="block w-full bg-white border border-gray-400 px-4 py-2 pr-8 rounded shadow">
+                 <option value="">Select Category</option>
+                 <option value="General">General</option>
+                 <option value="Sports">Sports</option>
+                 <option value="Movies">Movies</option>
+             </select>
+         </div>
+         <div class="mb-4" id="difficultyContainer" style="display: none;">
+             <label for="difficulty" class="block text-gray-700 text-sm font-bold mb-2">Select Difficulty Level</label>
+             <select id="difficulty" class="block w-full bg-white border border-gray-400 px-4 py-2 pr-8 rounded shadow">
+                 <option value="">Select Difficulty Level</option>
+                 <option value="easy">Easy</option>
+                 <option value="medium">Medium</option>
+                 <option value="hard">Hard</option>
+             </select>
+         </div>
+         <button id="fetchQuestions" class="bg-green-500 text-white font-bold py-2 px-4 rounded">Fetch Questions</button>
+         <div id="questions" class="mt-6"></div>
+     </div>
+     <script>
+         document.getElementById('category').addEventListener('change', () => {
+             const category = document.getElementById("category").value;
+             const difficultyContainer = document.getElementById("difficultyContainer");
  
-</body>
-</html> -->
-
-
-
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Questions by Level</title>
-</head>
-<body>
-  <select id="levelSelect">
-    <option value="">Select Level</option>
-    <option value="easy">Easy</option>
-    <option value="medium">Medium</option>
-    <option value="hard">Hard</option>
-  </select>
-  <div id="questionsContainer"></div>
-
-  <script>
-   document.getElementById('levelSelect').addEventListener('change', async function() {
-  const level = this.value;
-  if (level) {
-    try {
-      const response = await fetch(`http://localhost:4000/questions/${level}`);
-      const questions = await response.json();
-      console.log('Fetched questions:', questions);  // Log fetched questions
-      displayQuestions(questions);
-    } catch (error) {
-      console.error('Error fetching questions:', error);
-    }
-  } else {
-    document.getElementById('questionsContainer').innerHTML = '';
-  }
-});
-
-    function displayQuestions(questions) {
-      const container = document.getElementById('questionsContainer');
-      container.innerHTML = '';
-      questions.forEach(question => {
-        const questionDiv = document.createElement('div');
-        question.questionArray.forEach(q => {
-          questionDiv.innerHTML += `<p>${q.text}</p>`;
-          const options = q.options.map(option => 
-            `<label><input type="checkbox" name="option">${option}</label>`
-          ).join('<br>');
-          questionDiv.innerHTML += options;
-        });
-        container.appendChild(questionDiv);
-      });
-    }
-  </script>
-</body>
-</html>
-
+             if (category) {
+                 difficultyContainer.style.display = "block";
+             } else {
+                 difficultyContainer.style.display = "none";
+             }
+         });
+ 
+         document.getElementById('fetchQuestions').addEventListener('click', async () => {
+             const category = document.getElementById("category").value;
+             const difficulty = document.getElementById("difficulty").value;
+ 
+             if (!category) {
+                 alert('Please select a category');
+                 return;
+             }
+ 
+             if (!difficulty) {
+                 alert('Please select a difficulty level');
+                 return;
+             }
+ 
+             try {
+                 const response = await fetch(`http://localhost:3000/get_questions/getQuestions?difficultyLevel=${difficulty}&category=${category}`);
+                 
+                 if (!response.ok) {
+                     throw new Error(`HTTP error! Status: ${response.status}`);
+                 }
+ 
+                 const questions = await response.json();
+                 console.log('Fetched questions', questions);
+ 
+                 displayQuestions(questions);
+             } catch (error) {
+                 console.error('Error fetching questions', error);
+                 alert('Failed to fetch questions');
+             }
+         });
+ 
+         function displayQuestions(questions) {
+             const questionsContainer = document.getElementById('questions');
+             questionsContainer.innerHTML = '';
+ 
+             if (questions.length === 0) {
+                 questionsContainer.innerHTML = '<p class="text-gray-700">No questions found for the selected category and difficulty level.</p>';
+                 return;
+             }
+ 
+             questions.forEach(questionSet => {
+                 const questionElement = document.createElement('div');
+                 questionElement.className = 'bg-white p-4 rounded mb-4';
+ 
+                 const questionText = document.createElement('h3');
+                 questionText.className = 'text-gray-800 text-lg font-semibold';
+                 questionText.textContent = `Difficulty Level: ${questionSet.difficultyLevel}`;
+                 questionElement.appendChild(questionText);
+ 
+                 questionSet.questionArray.forEach((question, idx) => {
+                     const questionItem = document.createElement('div');
+                     questionItem.className = 'mt-4';
+ 
+                     const questionParagraph = document.createElement('p');
+                     questionParagraph.className = 'text-base font-medium mb-1';
+                     questionParagraph.textContent = `${idx + 1}. ${question.que}`;
+                     questionItem.appendChild(questionParagraph);
+ 
+                     const optionsList = document.createElement('div');
+                     question.options.forEach(option => {
+                         const optionItem = document.createElement('div');
+                         optionItem.className = 'flex items-center mb-2';
+ 
+                         const checkbox = document.createElement('input');
+                         checkbox.type = 'checkbox';
+                         checkbox.className = 'mr-2';
+                         optionItem.appendChild(checkbox);
+ 
+                         const optionLabel = document.createElement('label');
+                         optionLabel.className = 'text-gray-700';
+                         optionLabel.textContent = option;
+                         optionItem.appendChild(optionLabel);
+ 
+                         optionsList.appendChild(optionItem);
+                     });
+                     questionItem.appendChild(optionsList);
+ 
+                     questionElement.appendChild(questionItem);
+                 });
+ 
+                 questionsContainer.appendChild(questionElement);
+             });
+         }
+     </script>
+ </body>
+ </html>
